@@ -38,9 +38,8 @@ struct Args {
     #[arg(short, long, action, help = "Monitor memory usage")]
     memory: bool,
 
-
-    // #[arg(short, long, help = "Receiver Email")]
-    // limit: 
+    #[arg(short = 'T', long, help = "The average threshold percentage (f64) of the resource usage")]
+    threshold: f64
 
 }
 
@@ -108,7 +107,7 @@ fn main() {
             #[cfg(debug_assertions)]
             println!("Average: {}\nSum: {}", average, sum);
 
-            if average >= 50.0 {
+            if average >= args.threshold {
                 send_email(
                     &args.name,
                     &args.from_email,

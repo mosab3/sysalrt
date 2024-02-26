@@ -1,7 +1,7 @@
 use clap::Parser;
 use std::thread;
 use std::time::{SystemTime, Duration};
-use sysalrt::sub::send_email;
+use sysalrt::email::send_email;
 use sysalrt::usage::{memory_usage, cpu_usage};
 
 #[derive(Parser, Debug)]

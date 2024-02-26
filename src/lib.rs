@@ -1,2 +1,2 @@
-pub mod sub;
+pub mod email;
 pub mod usage;

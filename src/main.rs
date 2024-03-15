@@ -51,32 +51,30 @@ struct Args {
 fn main() {
     let args: Args = Args::parse();
     
-    let cooldown: u64 = 3 * 60;
+    const COOLDOWN: u64 = 3 * 60;
 
     let mut reading: Vec<u64> = Vec::new();
     let mut timer: SystemTime = SystemTime::now();
-    let refresh_status = Duration::from_secs(3);
-
-    let total_size = 100;
-
-    let monitor_type = if args.cpu {
+    const REFRESH_READING: Duration = Duration::from_secs(2);
+    const TOTAL_PERCENTAGE: u64 = 100;
+    let monitor_type: &str = if args.cpu {
         "CPU"
     } else {
         "MEMORY"
     };
 
-    let ui_elements = UiElements::values();
+    let ui_elements: UiElements = UiElements::values();
 
     let template = format!("
     [1/4] OS: {:?}
     [2/4] USER: {:?}
     [3/4] SESSION ID: {:?}
-    [3/4] MONITORING: {:?}
+    [4/4] MONITORING: {:?}
 
-    {{spinner:.green}} [{{elapsed_precise}}] [{{wide_bar:.cyan/blue}}] {{percent}}%/100%\n
+    [USAGE] [{{wide_bar:.cyan/blue}}] {{percent}}%/100% {{spinner:.green}} [{{elapsed_precise}}]\n
     ", ui_elements.os, ui_elements.user, ui_elements.session_id, monitor_type);
 
-    let pb = ProgressBar::new(total_size);
+    let pb = ProgressBar::new(TOTAL_PERCENTAGE);
 
     pb.set_style(ProgressStyle::with_template(&template)
         .unwrap()
@@ -91,25 +89,22 @@ fn main() {
         } else {
             panic!("Flag '--cpu' or '--memory' not provided");
         };
-
+    
         reading.push(monitor_obj);
         
         pb.set_position(min(monitor_obj, 100));
-        thread::sleep(refresh_status);
+        thread::sleep(REFRESH_READING);
 
-        let elapsed: u64 = match timer.elapsed() {
-            Ok(elapsed) => elapsed.as_secs(),
-            Err(e) => panic!("{e:?}")
-        };    
+        let elapsed: u64 = timer.elapsed().unwrap().as_secs(); 
 
-        if elapsed >= cooldown {
+        if elapsed >= COOLDOWN && reading.len() >= 10 {
             let sum: u64 = reading.iter().sum();
             let average: f64 = sum as f64 / reading.len() as f64;
     
-            #[cfg(debug_assertions)]
-            println!("Average: {}\nSum: {}", average, sum);
-    
             if average >= args.threshold {
+                #[cfg(debug_assertions)]
+                println!("Average: {}\nSum: {}", average, sum);
+        
                 send_email(
                     &args.name,
                     &args.from_email,
@@ -117,10 +112,12 @@ fn main() {
                     &args.server,
                     &args.to_email,
                 )
+            } else {
+                // Reset Timer and reading vector
+                timer = SystemTime::now();
+                reading.clear()
+                
             }
-
-            timer = SystemTime::now();            
         }
-
     }
 }

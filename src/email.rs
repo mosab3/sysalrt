@@ -16,12 +16,12 @@ lazy_static! {
     };
 }
 
-fn template(name: &String, email: &String) -> Result<String, Box<dyn Error>> {
+fn template(session_id: u64, monitor_type: &str) -> Result<String, Box<dyn Error>> {
 
     // Using the tera Context struct
     let mut context = Context::new();
-    context.insert("name", &name);
-    context.insert("email", &email);
+    context.insert("session_id", &session_id);
+    context.insert("monitor_type", &monitor_type);
 
     // Render
     Ok(TERA.render("index.html", &context)?)
@@ -46,16 +46,19 @@ pub fn send_email(
     // Receiver Email
     to_email: &String,
 
+    session_id: u64,
+
+    monitor_type: &str
 ) {
 
-    match template(&name, &from_email) {
+    match template(session_id, monitor_type) {
         Ok(res) => {            
             let from = format!("{name} <{from_email}>");
             let email = Message::builder()
             .from(from.parse().unwrap())
             // .reply_to("Yuin <yuin@domain.tld>".parse().unwrap())
             .to(to_email.parse().unwrap())
-            .subject("Happy new year")
+            .subject("URGENT: System Resource Alert")
             .header(ContentType::TEXT_HTML)
             .body(String::from(res))
             .unwrap();

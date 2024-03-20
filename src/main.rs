@@ -97,7 +97,7 @@ fn main() {
 
         let elapsed: u64 = timer.elapsed().unwrap().as_secs(); 
 
-        if elapsed >= COOLDOWN && reading.len() >= 10 {
+        if elapsed >= COOLDOWN && reading.len() as u64 >= 10 {
             let sum: u64 = reading.iter().sum();
             let average: f64 = sum as f64 / reading.len() as f64;
     
@@ -111,7 +111,12 @@ fn main() {
                     &args.password,
                     &args.server,
                     &args.to_email,
-                )
+                    ui_elements.session_id,
+                    monitor_type
+                );
+
+                timer = SystemTime::now();
+                reading.clear()
             } else {
                 // Reset Timer and reading vector
                 timer = SystemTime::now();

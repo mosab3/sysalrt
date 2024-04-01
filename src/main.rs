@@ -1,8 +1,11 @@
 use clap::Parser;
+use std::io::Write;
 use std::thread;
 use std::time::{SystemTime, Duration};
-use std::fmt::Write;
+use std::fmt::Write as fmtWrite;
 use std::cmp::min;
+use std::path::PathBuf;
+use std::fs::OpenOptions;
 use sysalrt::email::send_email;
 use sysalrt::usage::{memory_usage, cpu_usage};
 use sysalrt::ui::UiElements;
@@ -44,7 +47,10 @@ struct Args {
     memory: bool,
 
     #[arg(short = 'T', long, help = "The average threshold percentage (f64) of the resource usage")]
-    threshold: f64
+    threshold: f64,
+
+    #[arg(short, long, help = "append the session id to a end of an existing file")]
+    append: Option<PathBuf>
 
 }
 
@@ -78,9 +84,29 @@ fn main() {
 
     pb.set_style(ProgressStyle::with_template(&template)
         .unwrap()
-        .with_key("eta", |state: &ProgressState, w: &mut dyn Write| write!(w, "{:.1}s", state.eta().as_secs_f64()).unwrap())
+        .with_key("eta", |state: &ProgressState, w: &mut dyn fmtWrite| write!(w, "{:.1}s", state.eta().as_secs_f64()).unwrap())
         .progress_chars("#|-"));
     
+    // Check if path exist and is a file
+    if let Some(ref append) = args.append {
+        match append.exists() {
+            true => match append.is_file() {
+                false => panic!("Append path is not a file"),
+                true => (),
+            },
+            false => panic!("Append path does not exist"),
+        }
+    }
+
+    let mut file = OpenOptions::new()
+        .append(true)
+        .open(args.append.unwrap())
+        .expect("Error opening append file");
+
+    let data = ui_elements.session_id.to_string() + "\n";
+
+    file.write(&data.as_bytes()).expect("Error writing session id to file");
+
     loop {
         let monitor_obj: u64 = if args.cpu {
             cpu_usage()

@@ -40,16 +40,20 @@ struct Args {
     #[arg(short, long, help = "Receiver Email")]
     to_email: String,
 
+    // Monitor CPU
     #[arg(short, long, action, help = "Monitor CPU usage, if cpu flag is present, memory flag will be ignored")]
     cpu: bool,
 
+    // Monitor Memory
     #[arg(short, long, action, help = "Monitor memory usage")]
     memory: bool,
 
+    // Threshold percentage
     #[arg(short = 'T', long, help = "The average threshold percentage (f64) of the resource usage")]
     threshold: f64,
 
-    #[arg(short, long, help = "append the session id to a end of an existing file")]
+    // Append Session id into file
+    #[arg(short, long, help = "Append the session id to an existing file")]
     append: Option<PathBuf>
 
 }

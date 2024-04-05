@@ -96,20 +96,20 @@ fn main() {
         match append.exists() {
             true => match append.is_file() {
                 false => panic!("Append path is not a file"),
-                true => (),
+                true => {
+                    // Appending session id to file
+                    let mut file = OpenOptions::new()
+                        .append(true)
+                        .open(args.append.unwrap())
+                        .expect("Error opening append file");
+                    let data = ui_elements.session_id.to_string() + "\n";
+                    file.write(&data.as_bytes()).expect("Error writing session id to file");
+
+                },
             },
             false => panic!("Append path does not exist"),
         }
     }
-
-    let mut file = OpenOptions::new()
-        .append(true)
-        .open(args.append.unwrap())
-        .expect("Error opening append file");
-
-    let data = ui_elements.session_id.to_string() + "\n";
-
-    file.write(&data.as_bytes()).expect("Error writing session id to file");
 
     loop {
         let monitor_obj: u64 = if args.cpu {

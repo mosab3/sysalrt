@@ -32,24 +32,28 @@ struct Args {
     #[arg(short, long, help = "Sender SMTP Server Domain")]
     server: String,
     
-    // Sender SMTP Port Number, NOTE: still not implemented.
-    #[arg(short = 'P', long, help = "Sender SMTP Port Number")]
-    port: Option<u16>,
+    // Sender SMTP Port Number
+    #[arg(short = 'P', long, help = "Sender SMTP Port Number", default_value_t = 443)]
+    port: u16,
     
     // Receiver Email
     #[arg(short, long, help = "Receiver Email")]
     to_email: String,
 
+    // Monitor CPU
     #[arg(short, long, action, help = "Monitor CPU usage, if cpu flag is present, memory flag will be ignored")]
     cpu: bool,
 
+    // Monitor Memory
     #[arg(short, long, action, help = "Monitor memory usage")]
     memory: bool,
 
+    // Threshold percentage
     #[arg(short = 'T', long, help = "The average threshold percentage (f64) of the resource usage")]
     threshold: f64,
 
-    #[arg(short, long, help = "append the session id to a end of an existing file")]
+    // Append Session id into file
+    #[arg(short, long, help = "Append the session id to an existing file")]
     append: Option<PathBuf>
 
 }
@@ -92,20 +96,20 @@ fn main() {
         match append.exists() {
             true => match append.is_file() {
                 false => panic!("Append path is not a file"),
-                true => (),
+                true => {
+                    // Appending session id to file
+                    let mut file = OpenOptions::new()
+                        .append(true)
+                        .open(args.append.unwrap())
+                        .expect("Error opening append file");
+                    let data = ui_elements.session_id.to_string() + "\n";
+                    file.write(&data.as_bytes()).expect("Error writing session id to file");
+
+                },
             },
             false => panic!("Append path does not exist"),
         }
     }
-
-    let mut file = OpenOptions::new()
-        .append(true)
-        .open(args.append.unwrap())
-        .expect("Error opening append file");
-
-    let data = ui_elements.session_id.to_string() + "\n";
-
-    file.write(&data.as_bytes()).expect("Error writing session id to file");
 
     loop {
         let monitor_obj: u64 = if args.cpu {
@@ -136,6 +140,7 @@ fn main() {
                     &args.from_email,
                     &args.password,
                     &args.server,
+                    args.port,
                     &args.to_email,
                     ui_elements.session_id,
                     monitor_type

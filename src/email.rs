@@ -41,7 +41,7 @@ pub fn send_email(
     server: &String,
     
     // SMTP Port Number
-    // port: u16,
+    port: u16,
     
     // Receiver Email
     to_email: &String,
@@ -69,6 +69,7 @@ pub fn send_email(
         let mailer = SmtpTransport::relay(&server)
             .unwrap()
             .credentials(creds)
+            .port(port)
             .build();
         
         // Send the email

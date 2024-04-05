@@ -32,9 +32,9 @@ struct Args {
     #[arg(short, long, help = "Sender SMTP Server Domain")]
     server: String,
     
-    // Sender SMTP Port Number, NOTE: still not implemented.
-    #[arg(short = 'P', long, help = "Sender SMTP Port Number")]
-    port: Option<u16>,
+    // Sender SMTP Port Number
+    #[arg(short = 'P', long, help = "Sender SMTP Port Number", default_value_t = 443)]
+    port: u16,
     
     // Receiver Email
     #[arg(short, long, help = "Receiver Email")]
@@ -136,6 +136,7 @@ fn main() {
                     &args.from_email,
                     &args.password,
                     &args.server,
+                    args.port,
                     &args.to_email,
                     ui_elements.session_id,
                     monitor_type

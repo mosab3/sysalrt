@@ -33,7 +33,7 @@ struct Args {
     server: String,
     
     // Sender SMTP Port Number
-    #[arg(short = 'P', long, help = "Sender SMTP Port Number", default_value_t = 443)]
+    #[arg(short = 'P', long, help = "Sender SMTP Port Number", default_value_t = 465)]
     port: u16,
     
     // Receiver Email
@@ -54,7 +54,10 @@ struct Args {
 
     // Append Session id into file
     #[arg(short, long, help = "Append the session id to an existing file")]
-    append: Option<PathBuf>
+    append: Option<PathBuf>,
+
+    #[arg(short, long, action, help = "Disable TLS connection")]
+    use_tls: bool
 
 }
 
@@ -143,7 +146,8 @@ fn main() {
                     args.port,
                     &args.to_email,
                     ui_elements.session_id,
-                    monitor_type
+                    monitor_type,
+                    args.use_tls
                 );
 
                 timer = SystemTime::now();

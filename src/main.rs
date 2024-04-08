@@ -56,7 +56,7 @@ struct Args {
     #[arg(short, long, help = "Append the session id to an existing file")]
     append: Option<PathBuf>,
 
-    #[arg(short, long, action, help = "Disable TLS connection")]
+    #[arg(short, long, action, help = "Enable TLS connection")]
     use_tls: bool
 
 }
